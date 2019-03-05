@@ -1,0 +1,104 @@
+var fs = require('fs');
+var minimist = require('minimist');
+var pac = require('pac-resolver');
+
+var args = minimist(process.argv.slice(2));
+
+var testIpAddress = null;
+
+var sandbox = {
+    // Bogumil[TODO]: extend script with support for more than just IP
+    // dateRange: dateRange,
+    // dnsDomainIs: dnsDomainIs,
+    // dnsDomainLevels: dnsDomainLevels,
+    // dnsResolve: dnsResolve,
+    // isInNet: isInNet,
+    // isPlainHostName: isPlainHostName,
+    // isResolvable: isResolvable,
+    // localHostOrDomainIs: localHostOrDomainIs,
+    // myIpAddress: myIpAddress,
+    // shExpMatch: shExpMatch,
+    // timeRange: timeRange,
+    // weekdayRange: weekdayRange
+};
+
+var options = {sandbox: sandbox};
+
+function isURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    return pattern.test(str);
+}
+
+async function printPacResult(url) {
+    var result = await findProxyForURL(url);
+    console.log(url + ': ' + result);
+}
+
+
+if (args.h !== undefined) {
+    console.log(
+        "  -h HELP \n" +
+        "                show this help message and exit \n" +
+        "  -p PAC PATH \n" +
+        "  REQUIRED \n" +
+        "                absolute path of the PAC file that should be loaded & used \n" +
+        "  -i IP ADDRESS \n" +
+        "  OPTIONAL \n" +
+        "                the address to be returned by myIpAddress() when running PAC file \n" +
+        "  LIST OF URLS \n" +
+        "  REQUIRED \n" +
+        "                space-separate list of urls to test the PAC file with"
+
+    );
+    process.exit(1);
+}
+
+if (args.p === undefined) {
+    console.log('-p parameter [PAC file path] was not provided, exiting');
+    process.exit(1);
+}
+
+if (args.i === undefined) {
+    console.log('myIpAddress() will return localhost IP')
+}
+else {
+    console.log('myIpAddress() will return ' + args.i);
+    testIpAddress = args.i;
+    sandbox.myIpAddress = function () { return testIpAddress }
+}
+
+if (!fs.existsSync(args.p)) {
+    console.log('-p parameter [PAC file path] invalid, file does not exist');
+    process.exit(1);
+}
+
+console.log('Running PAC file: ' + args.p + ' for url(s): ' + args._.toString());
+
+try {
+    var findProxyForURL = pac(fs.readFileSync(args.p), options);
+
+    for (i = 0; i < args._.length; ++i) {
+
+        var testURL = args._[i];
+
+        if (isURL(testURL)) {
+            // if url doesn't start with http or https a deprication warning is printed
+            if(!testURL.startsWith('http://') && !testURL.startsWith('https://'))
+                testURL = 'https://' + testURL;
+            printPacResult(testURL);
+        }
+        else {
+            console.log(testURL + ': not a valid URL');
+        }
+
+    }
+
+} catch (error) {
+    console.log('Error when parsing PAC file ' + args.p);
+    console.log(error.message)
+}
