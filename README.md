@@ -1,6 +1,7 @@
-#PAC Checker
+# PAC Checker
 
 PACK Checker is a command line tool for testing PAC files.
+Basically its just a wrapper around pac-resolver lib's functionality
 
 ## Prerequisits
 
