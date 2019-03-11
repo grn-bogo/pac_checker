@@ -5,6 +5,7 @@ var pac = require('pac-resolver');
 var args = minimist(process.argv.slice(2));
 
 var testIpAddress = null;
+var testLocals = null;
 
 var sandbox = {
     // Bogumil[TODO]: extend script with support for more than just IP
@@ -25,12 +26,12 @@ var sandbox = {
 var options = {sandbox: sandbox};
 
 function isURL(str) {
-    var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
-        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|'+ // domain name
-        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
-        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
-        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
-        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
     return pattern.test(str);
 }
 
@@ -53,7 +54,6 @@ if (args.h !== undefined) {
         "  LIST OF URLS \n" +
         "  REQUIRED \n" +
         "                space-separate list of urls to test the PAC file with"
-
     );
     process.exit(1);
 }
@@ -65,11 +65,27 @@ if (args.p === undefined) {
 
 if (args.i === undefined) {
     console.log('myIpAddress() will return localhost IP')
-}
-else {
+} else {
     console.log('myIpAddress() will return ' + args.i);
     testIpAddress = args.i;
-    sandbox.myIpAddress = function () { return testIpAddress }
+    sandbox.myIpAddress = function () {
+        return testIpAddress
+    }
+}
+
+if (fs.existsSync('sandbox.json')) {
+    testLocals = JSON.parse(fs.readFileSync('sandbox.json', 'utf8'));
+
+    if (testLocals.dnsResolution !== undefined &&
+
+        Object.keys(testLocals.dnsResolution).length !== 0) {
+        sandbox.isResolvable = function (host) {
+            return host in testLocals.dnsResolution;
+        };
+        sandbox.dnsResolve = function (host) {
+            return testLocals.dnsResolution[host];
+        };
+    }
 }
 
 if (!fs.existsSync(args.p)) {
@@ -88,11 +104,10 @@ try {
 
         if (isURL(testURL)) {
             // if url doesn't start with http or https a deprication warning is printed
-            if(!testURL.startsWith('http://') && !testURL.startsWith('https://'))
+            if (!testURL.startsWith('http://') && !testURL.startsWith('https://'))
                 testURL = 'https://' + testURL;
             printPacResult(testURL);
-        }
-        else {
+        } else {
             console.log(testURL + ': not a valid URL');
         }
 

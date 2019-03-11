@@ -1,7 +1,7 @@
 # PAC Checker
 
-PACK Checker is a command line tool for testing PAC files.
-Basically its just a wrapper around pac-resolver lib's functionality
+PAC Checker is a command line tool for testing PAC files.
+Basically it's just a wrapper around pac-resolver lib's functionality.
 
 ## Prerequisits
 
@@ -97,4 +97,28 @@ http://xxx.com/: DIRECT
 https://pornhub.com: DIRECT
 
 ```
+
+### DNS Resolution simulation
+
+The script also supports simulating local DNS resolution by providing entires in a JSON file 'sandbox.json'
+
+Example 'sandbox.json' DNS definition:
+
+```js
+{
+  "dnsResolution": {
+    "resolvable.example.net": "10.24.46.24"
+  }
+}
+```
+
+Defining the sandbox in that way will cause:
+* isResolvable("resolvable.example.net") will return true,
+* dnsResolve("resolvable.example.net") will return "10.24.46.24".
+
+
+
+
+
+
 
