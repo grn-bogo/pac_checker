@@ -116,7 +116,12 @@ Defining the sandbox in that way will cause:
 * isResolvable("resolvable.example.net") will return true,
 * dnsResolve("resolvable.example.net") will return "10.24.46.24".
 
-
+To disable this feature and use local DNS resolution just leave the dnsResolution dictionary empty like that:
+```js
+{
+  "dnsResolution": {}
+}
+```
 
 
 
