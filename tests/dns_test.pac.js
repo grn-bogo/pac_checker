@@ -2,7 +2,7 @@ function FindProxyForURL(url, host) {
 
     var clientIP = myIpAddress();
     if (isInNet(clientIP, "10.46.0.0", "255.255.0.0")) {
-        if (isResolvable("resolvable.dnbnor.net")) {
+        if (isResolvable("resolvable.example.net")) {
             return "DIRECT";
         }
     }
