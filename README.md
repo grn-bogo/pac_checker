@@ -69,7 +69,7 @@ The script should be ran from its directory. Example runs below:
 Example run without a mocked IP for one URLs
 
 ```sh
-$ node pac_checker -p test_pac_ok_dnb.pac foo.com
+$ node pac_checker -p test_pac.pac foo.com
 myIpAddress() will return localhost IP
 Running PAC file: test_pac.pac for url(s): https://foo.com
 http://foo.com: PROXY 112.52.102.15:1712;DIRECT
@@ -78,7 +78,7 @@ http://foo.com: PROXY 112.52.102.15:1712;DIRECT
 Example run without a mocked IP for multiple URLs
 
 ```sh
-$ node pac_checker -p test_pac_ok_dnb.pac http://foo.com/ http://xxx.com/ pornhub.com
+$ node pac_checker -p test_pac.pac http://foo.com/ http://xxx.com/ pornhub.com
 myIpAddress() will return localhost IP
 Running PAC file: test_pac.pac for url(s): http://foo.com/,http://xxx.com/,pornhub.com
 http://xxx.com/: PROXY 112.35.102.15:1712;DIRECT
@@ -89,9 +89,9 @@ http://foo.com/: PROXY 112.52.102.15:1712;DIRECT
 Example run with a mocked IP for multiple URLs
 
 ```sh
-$ node pac_checker -p test_pac_ok_dnb.pac -i 10.46.21.2 http://foo.com/ http://xxx.com/ pornhub.com
+$ node pac_checker -p test_pac.pac -i 10.46.21.2 http://foo.com/ http://xxx.com/ pornhub.com
 myIpAddress() will return 10.46.21.2
-Running PAC file: test_pac_ok_dnb.pac for url(s): http://foo.com/,http://xxx.com/,pornhub.com
+Running PAC file: test_pac.pac for url(s): http://foo.com/,http://xxx.com/,pornhub.com
 http://foo.com/: DIRECT
 http://xxx.com/: DIRECT
 https://pornhub.com: DIRECT
@@ -113,8 +113,8 @@ Example 'sandbox.json' DNS definition:
 ```
 
 Defining the sandbox in that way will cause:
-* isResolvable("resolvable.example.net") will return true,
-* dnsResolve("resolvable.example.net") will return "10.24.46.24".
+* isResolvable("resolvable.example.net") calls in the PAC file to return true,
+* dnsResolve("resolvable.example.net") calls in the PAC file to return "10.24.46.24".
 
 To disable this feature and use local DNS resolution just leave the dnsResolution dictionary empty like that:
 ```js
@@ -122,8 +122,3 @@ To disable this feature and use local DNS resolution just leave the dnsResolutio
   "dnsResolution": {}
 }
 ```
-
-
-
-
-
